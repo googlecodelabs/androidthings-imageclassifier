@@ -18,84 +18,150 @@ package com.example.androidthings.imageclassifier;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
-import android.util.Pair;
 import android.view.KeyEvent;
 
-import com.google.android.things.contrib.driver.button.Button;
 import com.google.android.things.contrib.driver.button.ButtonInputDriver;
+import com.google.android.things.contrib.driver.rainbowhat.RainbowHat;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 public class ImageClassifierActivity extends Activity {
     private static final String TAG = "ImageClassifierActivity";
 
-    private static final String BUTTON_PIN = "BCM21";
-
-    private TensorFlowImageClassifier mTensorFlowClassifier;
-
     private ButtonInputDriver mButtonDriver;
+    private boolean mProcessing;
+    // ADD ARTIFICIAL INTELLIGENCE
+    // ADD CAMERA SUPPORT
+
+    /**
+     * Initialize the classifier that will be used to process images.
+     */
+    private void initClassifier() {
+        // ADD ARTIFICIAL INTELLIGENCE
+    }
+
+    /**
+     * Clean up the resources used by the classifier.
+     */
+    private void destroyClassifier() {
+        // ADD ARTIFICIAL INTELLIGENCE
+    }
+
+    /**
+     * Process an image and identify what is in it. When done, the method
+     * {@link #onPhotoRecognitionReady(String[])} must be called with the results of
+     * the image recognition process.
+     *
+     * @param image Bitmap containing the image to be classified. The image can be
+     *              of any size, but preprocessing might occur to resize it to the
+     *              format expected by the classification process, which can be time
+     *              and power consuming.
+     */
+    private void doRecognize(Bitmap image) {
+        // ADD ARTIFICIAL INTELLIGENCE
+        String[] results = null;
+        onPhotoRecognitionReady(results);
+    }
+
+    /**
+     * Initialize the camera that will be used to capture images.
+     */
+    private void initCamera() {
+        // ADD CAMERA SUPPORT
+    }
+
+    /**
+     * Clean up resources used by the camera.
+     */
+    private void closeCamera() {
+        // ADD CAMERA SUPPORT
+    }
+
+    /**
+     * Load the image that will be used in the classification process.
+     * When done, the method {@link #onPhotoReady(Bitmap)} must be called with the image.
+     */
+    private void loadPhoto() {
+        // ADD CAMERA SUPPORT
+        Bitmap bitmap = getStaticBitmap();
+        onPhotoReady(bitmap);
+    }
+
+
+
+    // --------------------------------------------------------------------------------------
+    // NOTE: The normal codelab flow won't require you to change anything below this line,
+    // although you are encouraged to read and understand it.
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mTensorFlowClassifier = new TensorFlowImageClassifier(this);
+        initCamera();
+        initClassifier();
         initButton();
+        Log.d(TAG, "READY");
     }
 
+    /**
+     * Register a GPIO button that, when clicked, will generate the {@link KeyEvent#KEYCODE_ENTER}
+     * key, to be handled by {@link #onKeyUp(int, KeyEvent)} just like any regular keyboard
+     * event.
+     *
+     * If there's no button connected to the board, the doRecognize can still be triggered by
+     * sending key events using a USB keyboard or `adb shell input keyevent 66`.
+     */
     private void initButton() {
         try {
-            mButtonDriver = new ButtonInputDriver(BUTTON_PIN, Button.LogicState.PRESSED_WHEN_LOW,
-                    KeyEvent.KEYCODE_ENTER);
+            String pin = Build.DEVICE.equals("rpi3") ? RainbowHat.BUTTON_C : "GPIO_39";
+            mButtonDriver = RainbowHat.createButtonInputDriver(pin, KeyEvent.KEYCODE_ENTER);
             mButtonDriver.register();
         } catch (IOException e) {
-            Log.w(TAG, "Cannot find pin " + BUTTON_PIN + ". Ignoring push button on PIO. " +
-                    "Use a keyboard instead", e);
+            Log.w(TAG, "Cannot find button. Ignoring push button. Use a keyboard instead.", e);
         }
+    }
+
+    private Bitmap getStaticBitmap() {
+        Log.d(TAG, "Using sample photo in res/drawable/sampledog_224x224.png");
+        return BitmapFactory.decodeResource(this.getResources(), R.drawable.sampledog_224x224);
     }
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_ENTER) {
-            Log.d(TAG, "Button pressed, initiating photo recognition");
-            long start = System.currentTimeMillis();
-            doRecognize();
-            Log.i(TAG, "Image processing and recognition took " +
-                    (System.currentTimeMillis() - start) + "ms");
+            if (mProcessing) {
+                Log.e(TAG, "Still processing, please wait");
+                return true;
+            }
+            Log.d(TAG, "Running photo recognition");
+            mProcessing = true;
+            loadPhoto();
             return true;
         }
         return super.onKeyUp(keyCode, event);
     }
 
-    public void doRecognize() {
-        Bitmap bitmap = getBitmap();
-        final List<Pair<String, Float>> results = mTensorFlowClassifier.recognizeImage(bitmap);
-        Log.d(TAG, "Got the following results from Tensorflow: " + results);
+    private void onPhotoReady(Bitmap bitmap) {
+        doRecognize(bitmap);
     }
 
-    private Bitmap getBitmap() {
-        File imageFile = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), "photo.jpg");
-        Bitmap bitmap;
-        if (imageFile.exists()) {
-            Log.d(TAG, "Using image " + imageFile.getPath());
-            bitmap = BitmapFactory.decodeFile(imageFile.getPath());
-        } else {
-            Log.d(TAG, "Using sample photo, couldn't find image " + imageFile.getPath());
-            bitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.sampledog_224x224);
-        }
-        return bitmap;
+    private void onPhotoRecognitionReady(String[] results) {
+        Log.d(TAG, "RESULTS: " + Helper.formatResults(results));
+        mProcessing = false;
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         try {
-            if (mTensorFlowClassifier != null) mTensorFlowClassifier.close();
+            destroyClassifier();
+        } catch (Throwable t) {
+            // close quietly
+        }
+        try {
+            closeCamera();
         } catch (Throwable t) {
             // close quietly
         }
