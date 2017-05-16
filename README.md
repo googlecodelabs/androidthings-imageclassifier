@@ -1,7 +1,7 @@
 # Android Things Image Classifer Codelab
 
 This folder contains the source code for the
-[imageclassifier codelab](https://codelabs.developers.google.com/codelabs/androidthings-imageclassifier)
+[imageclassifier codelab](https://codelabs.developers.google.com/codelabs/androidthings-classifier)
 
 ### License
 
