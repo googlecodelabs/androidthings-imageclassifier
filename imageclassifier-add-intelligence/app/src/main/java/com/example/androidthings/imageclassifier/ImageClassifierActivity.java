@@ -132,8 +132,7 @@ public class ImageClassifierActivity extends Activity {
      */
     private void initButton() {
         try {
-            String pin = Build.DEVICE.equals("rpi3") ? RainbowHat.BUTTON_C : "GPIO_39";
-            mButtonDriver = RainbowHat.createButtonInputDriver(pin, KeyEvent.KEYCODE_ENTER);
+            mButtonDriver = RainbowHat.createButtonCInputDriver(KeyEvent.KEYCODE_ENTER);
             mButtonDriver.register();
         } catch (IOException e) {
             Log.w(TAG, "Cannot find button. Ignoring push button. Use a keyboard instead.", e);
