@@ -18,10 +18,12 @@ package com.example.androidthings.imageclassifier;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.WindowManager;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.google.android.things.contrib.driver.button.ButtonInputDriver;
 import com.google.android.things.contrib.driver.rainbowhat.RainbowHat;
@@ -35,6 +37,10 @@ public class ImageClassifierActivity extends Activity {
 
     private ButtonInputDriver mButtonDriver;
     private boolean mProcessing;
+
+    private ImageView mImage;
+    private TextView mResultText;
+
     private String[] labels;
     private TensorFlowInferenceInterface inferenceInterface;
     // ADD CAMERA SUPPORT
@@ -116,10 +122,17 @@ public class ImageClassifierActivity extends Activity {
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        setContentView(R.layout.activity_camera);
+        mImage = findViewById(R.id.imageView);
+        mResultText = findViewById(R.id.resultText);
+
+        updateStatus(getString(R.string.initializing));
         initCamera();
         initClassifier();
         initButton();
-        Log.d(TAG, "READY");
+        updateStatus(getString(R.string.help_message));
     }
 
     /**
@@ -148,10 +161,10 @@ public class ImageClassifierActivity extends Activity {
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_ENTER) {
             if (mProcessing) {
-                Log.e(TAG, "Still processing, please wait");
+                updateStatus("Still processing, please wait");
                 return true;
             }
-            Log.d(TAG, "Running photo recognition");
+            updateStatus("Running photo recognition");
             mProcessing = true;
             loadPhoto();
             return true;
@@ -159,13 +172,28 @@ public class ImageClassifierActivity extends Activity {
         return super.onKeyUp(keyCode, event);
     }
 
+    /**
+     * Image capture process complete
+     */
     private void onPhotoReady(Bitmap bitmap) {
+        mImage.setImageBitmap(bitmap);
         doRecognize(bitmap);
     }
 
+    /**
+     * Image classification process complete
+     */
     private void onPhotoRecognitionReady(String[] results) {
-        Log.d(TAG, "RESULTS: " + Helper.formatResults(results));
+        updateStatus(Helper.formatResults(results));
         mProcessing = false;
+    }
+
+    /**
+     * Report updates to the display and log output
+     */
+    private void updateStatus(String status) {
+        Log.d(TAG, status);
+        mResultText.setText(status);
     }
 
     @Override
