@@ -40,10 +40,14 @@ android {
             assets.srcDirs = ['./assets']
         }
     }
+    // Required to enable TF Lite to read model files directly from assets/
+    aaptOptions {
+        noCompress "tflite"
+    }
 }
 
 dependencies {
     compileOnly 'com.google.android.things:androidthings:+'
     implementation 'com.google.android.things.contrib:driver-rainbowhat:+'
-    implementation 'org.tensorflow:tensorflow-android:1.2.0-preview'
+    implementation 'org.tensorflow:tensorflow-lite:0.1.1'
 }

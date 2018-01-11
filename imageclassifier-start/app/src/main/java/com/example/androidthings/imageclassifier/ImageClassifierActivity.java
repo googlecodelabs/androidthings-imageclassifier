@@ -25,13 +25,29 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.androidthings.imageclassifier.classifier.Recognition;
 import com.google.android.things.contrib.driver.button.ButtonInputDriver;
 import com.google.android.things.contrib.driver.rainbowhat.RainbowHat;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Iterator;
 
 public class ImageClassifierActivity extends Activity {
     private static final String TAG = "ImageClassifierActivity";
+
+    /** Camera image capture size */
+    private static final int PREVIEW_IMAGE_WIDTH = 640;
+    private static final int PREVIEW_IMAGE_HEIGHT = 480;
+    /** Image dimensions required by TF model */
+    private static final int TF_INPUT_IMAGE_WIDTH = 224;
+    private static final int TF_INPUT_IMAGE_HEIGHT = 224;
+    /** Dimensions of model inputs. */
+    private static final int DIM_BATCH_SIZE = 1;
+    private static final int DIM_PIXEL_SIZE = 3;
+    /** TF model asset files */
+    private static final String LABELS_FILE = "labels.txt";
+    private static final String MODEL_FILE = "mobilenet_quant_v1_224.tflite";
 
     private ButtonInputDriver mButtonDriver;
     private boolean mProcessing;
@@ -39,26 +55,26 @@ public class ImageClassifierActivity extends Activity {
     private ImageView mImage;
     private TextView mResultText;
 
-    // ADD ARTIFICIAL INTELLIGENCE
-    // ADD CAMERA SUPPORT
+    // TODO: ADD ARTIFICIAL INTELLIGENCE
+    // TODO: ADD CAMERA SUPPORT
 
     /**
      * Initialize the classifier that will be used to process images.
      */
     private void initClassifier() {
-        // ADD ARTIFICIAL INTELLIGENCE
+        // TODO: ADD ARTIFICIAL INTELLIGENCE
     }
 
     /**
      * Clean up the resources used by the classifier.
      */
     private void destroyClassifier() {
-        // ADD ARTIFICIAL INTELLIGENCE
+        // TODO: ADD ARTIFICIAL INTELLIGENCE
     }
 
     /**
      * Process an image and identify what is in it. When done, the method
-     * {@link #onPhotoRecognitionReady(String[])} must be called with the results of
+     * {@link #onPhotoRecognitionReady(Collection)} must be called with the results of
      * the image recognition process.
      *
      * @param image Bitmap containing the image to be classified. The image can be
@@ -67,8 +83,8 @@ public class ImageClassifierActivity extends Activity {
      *              and power consuming.
      */
     private void doRecognize(Bitmap image) {
-        // ADD ARTIFICIAL INTELLIGENCE
-        String[] results = null;
+        // TODO: ADD ARTIFICIAL INTELLIGENCE
+        Collection<Recognition> results = null;
         onPhotoRecognitionReady(results);
     }
 
@@ -76,14 +92,14 @@ public class ImageClassifierActivity extends Activity {
      * Initialize the camera that will be used to capture images.
      */
     private void initCamera() {
-        // ADD CAMERA SUPPORT
+        // TODO: ADD CAMERA SUPPORT
     }
 
     /**
      * Clean up resources used by the camera.
      */
     private void closeCamera() {
-        // ADD CAMERA SUPPORT
+        // TODO: ADD CAMERA SUPPORT
     }
 
     /**
@@ -91,7 +107,7 @@ public class ImageClassifierActivity extends Activity {
      * When done, the method {@link #onPhotoReady(Bitmap)} must be called with the image.
      */
     private void loadPhoto() {
-        // ADD CAMERA SUPPORT
+        // TODO: ADD CAMERA SUPPORT
         Bitmap bitmap = getStaticBitmap();
         onPhotoReady(bitmap);
     }
@@ -166,9 +182,34 @@ public class ImageClassifierActivity extends Activity {
     /**
      * Image classification process complete
      */
-    private void onPhotoRecognitionReady(String[] results) {
-        updateStatus(Helper.formatResults(results));
+    private void onPhotoRecognitionReady(Collection<Recognition> results) {
+        updateStatus(formatResults(results));
         mProcessing = false;
+    }
+
+    /**
+     * Format results list for display
+     */
+    private String formatResults(Collection<Recognition> results) {
+        if (results == null || results.isEmpty()) {
+            return getString(R.string.empty_result);
+        } else {
+            StringBuilder sb = new StringBuilder();
+            Iterator<Recognition> it = results.iterator();
+            int counter = 0;
+            while (it.hasNext()) {
+                Recognition r = it.next();
+                sb.append(r.getTitle());
+                counter++;
+                if (counter < results.size() - 1) {
+                    sb.append(", ");
+                } else if (counter == results.size() - 1) {
+                    sb.append(" or ");
+                }
+            }
+
+            return sb.toString();
+        }
     }
 
     /**
