@@ -18,14 +18,13 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 27
-    buildToolsVersion '27.0.2'
 
     lintOptions {
         abortOnError false
     }
 
     defaultConfig {
-        applicationId = 'com.example.androidthings.imageclassifier'
+        applicationId 'com.example.androidthings.imageclassifier'
         minSdkVersion 27
         targetSdkVersion 27
     }
