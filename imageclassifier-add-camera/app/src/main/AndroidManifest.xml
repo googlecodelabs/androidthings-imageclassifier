@@ -19,6 +19,7 @@
     package="com.example.androidthings.imageclassifier">
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="com.google.android.things.permission.MANAGE_INPUT_DRIVERS" />
 
     <uses-permission android:name="com.google.android.things.permission.USE_PERIPHERAL_IO"/>
     <uses-permission android:name="com.google.android.things.permission.MANAGE_INPUT_DRIVERS" />
