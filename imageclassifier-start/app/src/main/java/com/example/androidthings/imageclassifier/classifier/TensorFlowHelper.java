@@ -34,6 +34,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
+import java.util.Arrays;
 
 /**
  * Helper functions for the TensorFlow image classifier.
@@ -97,7 +98,12 @@ public class TensorFlowHelper {
         }
 
         List<Recognition> results = new ArrayList<>(RESULTS_TO_SHOW);
-        for (Recognition r: sortedLabels) {
+        // Array to hold the sorted results from the PQ
+        Recognition[] sorted_results = sortedLabels.toArray(new Recognition[RESULTS_TO_SHOW]);
+        // Sort the array based on the PQ's comparator
+        Arrays.sort(sorted_results, sortedLabels.comparator());
+
+        for (Recognition r: sorted_results) {
             results.add(0, r);
         }
 
